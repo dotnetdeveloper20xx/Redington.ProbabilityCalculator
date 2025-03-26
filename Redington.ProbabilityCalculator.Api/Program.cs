@@ -38,12 +38,26 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 
 var app = builder.Build();
 
 // Middlewares
 app.UseHttpsRedirection();
+app.UseCors(MyAllowSpecificOrigins);
+
 app.UseAuthorization();
 app.MapControllers();
 app.UseSwagger();

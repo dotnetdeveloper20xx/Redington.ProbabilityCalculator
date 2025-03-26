@@ -1,0 +1,11 @@
+export type CalculationType = "CombinedWith" | "Either";
+
+export interface ProbabilityRequest {
+  probabilityA: number;
+  probabilityB: number;
+  calculationType: CalculationType;
+}
+
+export interface ProbabilityResult {
+  result: number;
+}
