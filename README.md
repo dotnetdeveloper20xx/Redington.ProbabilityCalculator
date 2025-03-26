@@ -1,140 +1,165 @@
-# Redington Probability Calculator – Backend Documentation
+# Redington Probability Calculator – Full Stack Project Documentation
 
-## 📌 Project Summary
+## 🌎 Project Overview
 
-This ASP.NET Core Web API backend is built to solve a simple but real-world problem: enabling Redington investment consultants to calculate basic probability operations using user-provided inputs. While the logic is simple, the implementation showcases clean architecture, best practices, and scalable structure suitable for enterprise-grade solutions.
+The Redington Probability Calculator is a full-stack web application designed to help investment consultants compute basic probability operations: `CombinedWith` and `Either`, based on two input probabilities. The goal was to deliver a solution that is:
+
+- Professionally structured
+- Scalable and maintainable
+- Demonstrates advanced yet appropriate use of technology
+- Easy to test, explain, and extend
+
+The project has been split into two distinct layers:
+
+- **Backend**: ASP.NET Core Web API
+- **Frontend**: React with TypeScript and Bootstrap
+
+This document outlines the reasoning behind each decision, technology used, architecture design, and what was deliberately avoided for good reasons.
 
 ---
 
-## 📺 Technologies Used
+## 🧬 Backend – ASP.NET Core Web API
 
-| Technology               | Purpose                                           |
-|--------------------------|---------------------------------------------------|
-| ASP.NET Core Web API     | Backend API and REST interface                   |
-| FluentValidation         | Input validation (probabilities between 0–1)     |
-| xUnit, Moq               | Unit testing and mocking                         |
-| Swagger (Swashbuckle)    | Auto-generated interactive API docs              |
-| System.Text.Json         | JSON serialization with enum string support      |
-| File I/O (Async)         | Logging user calculations to a `.txt` file       |
+### 📺 Technologies Used
 
----
+| Technology                      | Purpose                                                                 |
+|----------------------------------|-------------------------------------------------------------------------|
+| ASP.NET Core Web API            | Lightweight REST API and application host                              |
+| FluentValidation                | Declarative and centralized input validation                           |
+| xUnit, Moq, FluentAssertions    | Unit testing with mocks and expressive assertions                      |
+| Swashbuckle / Swagger UI        | Auto-generated, interactive API documentation                          |
+| System.Text.Json Enum Converter | Displays enums as strings in request/response                          |
+| File I/O (Async)                | Logging calculations to a file (no database required)                  |
 
-## 🛡️ Architecture & Structure
-
-This project follows a modular and layered architecture:
+### 📚 Architecture & Structure
 
 ```
 Redington.ProbabilityCalculator/
-├── Api/              → Web API, Controllers, DI, Swagger
-├── Core/             → DTOs, Interfaces, Enums, Services
-├── Infrastructure/   → Logging (File I/O)
-└── Tests/            → Unit tests using xUnit and Moq
+├── Api/              → Controllers, Swagger, DI setup, CORS
+├── Core/             → Business logic, DTOs, Enums, Interfaces
+├── Infrastructure/   → Logging implementation (file-based)
+└── Tests/            → Unit tests for service and controller layers
 ```
 
+### 🤝 Design Decisions
+
+- **Clean Architecture Principles**: Code is split into Core (business logic), Infrastructure (implementation), and API (presentation layer).
+- **Dependency Injection**: All services (calculator, logger, validator) are injected, making testing and extension easy.
+- **Single Responsibility Principle**: Each class has one job — e.g., the logger only logs, the calculator only calculates.
+- **Async Programming**: File logging is async to avoid blocking I/O operations.
+- **Validation with FluentValidation**: Clean and testable validation rules for probability range.
+- **Centralized Error Handling**: Middleware to catch and return friendly error responses.
+
+### ❌ What We Didn't Use (and Why)
+
+| Excluded Feature       | Reason                                                                 |
+|------------------------|------------------------------------------------------------------------|
+| Entity Framework / DB  | Brief explicitly asked for no database; file-based logging was sufficient |
+| MediatR / CQRS         | Overhead for a single use case; pattern simulated via service layer     |
+| Authentication / JWT   | Explicitly excluded per project requirements                            |
+| Global State / Caching | Not needed due to stateless, single-calculation nature of API           |
+
 ---
 
-## ✅ Key Design Principles
+## 🌐 Frontend – React + TypeScript + Bootstrap
 
-| Principle / Pattern              | Implementation                                    |
-|----------------------------------|---------------------------------------------------|
-| SOLID Principles                 | SRP, DI, Interface segregation                   |
-| Clean Architecture (Lite)       | Core domain decoupled from infrastructure         |
-| Command Pattern (CQRS-lite)     | `ProbabilityRequestDto` as Command DTO            |
-| Async/Await for I/O             | Async logging via `File.AppendAllTextAsync()`     |
-| Separation of Concerns          | Controller → Service → DTO → Logger → File        |
-| Centralized Validation          | `FluentValidation` for probability bounds         |
-| Consistent API Shape (Optional) | Can wrap with `ApiResponse<T>`                    |
-| Swagger Enum Display            | Shows enum values as strings (`"Either"`, etc.)   |
+### 📺 Technologies Used
 
----
+| Technology     | Purpose                                           |
+|----------------|---------------------------------------------------|
+| React          | Component-based UI development                   |
+| TypeScript     | Strong typing, safer state management            |
+| Vite           | Lightning-fast dev server and build tool         |
+| Bootstrap 5    | Clean, responsive UI styling                     |
+| Axios          | HTTP client for backend communication            |
 
-## 💪 Testing
+### 📚 Structure
 
-- Unit tests for both the calculator service and controller
-- Mocked dependencies using Moq
-- FluentAssertions for clean and expressive validation
-
-Run tests:
-
-```bash
-dotnet test
+```
+src/
+├── components/          → Reusable UI components
+│   └── CalculatorForm.tsx
+├── services/            → Axios API client
+│   └── api.ts
+├── types/               → DTOs and enums shared with backend model
+│   └── Probability.ts
+├── App.tsx              → Application entry point
+└── main.tsx             → Bootstrap file for React/Vite
 ```
 
----
+### 🤝 Design Decisions
 
-## ❌ Why We Didn’t Use Certain Technologies
+- **Bootstrap instead of complex UI libraries**: Lightweight, fast to style, and acceptable for enterprise-grade UI.
+- **No Formik/Yup**: Handled basic form validation manually, as it's a simple form with minimal fields.
+- **TypeScript**: Prevents bugs, aligns with backend DTOs, improves long-term maintainability.
+- **Axios**: Clean and reliable HTTP client with interceptors support (for future).
+- **No Global State**: This is a stateless form — no need for Redux or Context API.
 
-| Technology            | Reason                                                |
-|-----------------------|--------------------------------------------------------|
-| Entity Framework / DB | Not required; file-based log was sufficient            |
-| JWT / Authentication  | Explicitly excluded per Redington brief                |
-| Full CQRS/MediatR     | Unnecessary for single-action API, pattern simulated   |
+### ❌ What We Didn't Use (and Why)
 
----
-
-## 🧐 Why This Approach?
-
-This backend design reflects:
-- **Scalable thinking** for a small-scope problem
-- Focus on **clean code, testability, and structure**
-- Adherence to **real-world best practices** without overengineering
-
-It proves readiness for:
-- Extending the system (user history, database, auth)
-- Clean onboarding for teams
-- Production-readiness from day one
+| Feature/Library         | Reason                                                             |
+|-------------------------|--------------------------------------------------------------------|
+| Tailwind / MUI          | Avoided to keep styling simple and aligned with enterprise norms   |
+| Redux / Zustand         | No shared or global state required                                 |
+| Formik / React Hook Form| Simple validation logic achievable without dependencies             |
+| React Testing Library   | Out of scope for this exercise; can be easily added if needed      |
 
 ---
 
-## 🚀 Future-Ready Ideas
+## 🚀 How to Run Locally
 
-- Replace file logger with database persistence
-- Introduce MediatR for CQRS messaging
-- Add versioning and correlation ID middleware
-- Add authentication layer (if needed)
-
----
-
-## 🌐 Running the API
-
+### 📂 Backend
 ```bash
 cd src/Redington.ProbabilityCalculator.Api
 dotnet run
 ```
-
-Then open Swagger UI:
-
+Visit Swagger UI at:
 ```
 http://localhost:5007/swagger
 ```
 
-Try this sample payload:
-
-```json
-{
-  "probabilityA": 0.5,
-  "probabilityB": 0.6,
-  "calculationType": "Either"
-}
+### 📂 Frontend
+```bash
+cd redington-calculator-frontend
+npm install
+npm run dev
 ```
-
-Expected result:
-
-```json
-{
-  "result": 0.8
-}
+Open in browser:
 ```
-
-Check logs at:
-
+http://localhost:5173
 ```
-Redington.ProbabilityCalculator.Api/Logs/calculations.txt
-```
+Ensure backend is also running at `http://localhost:5007`.
 
 ---
 
-## 👨‍💼 Author Notes
+## 💡 Additional Notes
 
-This project was built with real-world architecture in mind to demonstrate clean design, testability, async programming, and thoughtful abstraction — while keeping it aligned with the provided scope and constraints.
+- CORS is enabled on the backend for `http://localhost:5173`
+- Logging is written to `Logs/calculations.txt` with timestamps and results
+- The backend is thoroughly tested with `xUnit` and `Moq`
+
+---
+
+## 💪 Interview-Worthy Highlights
+
+- Clean separation of responsibilities
+- Real-world practices like async I/O, centralized validation, and API documentation
+- Scalable, testable architecture that avoids overengineering
+- Demonstrates mature judgment: **when to use something, and when not to**
+
+---
+
+## 🔄 Future Enhancements
+
+- Add Docker support for backend + frontend containerized deployment
+- Add GitHub Actions for CI testing
+- Add environment-based API URL config in React
+- Extend with user history (requires database + EF Core)
+- Add frontend test coverage and loading states
+
+---
+
+## 👨‍💼 Author Statement
+
+This project is intentionally crafted to reflect clean coding principles, industry-standard architecture, and thoughtful design decisions. It stays within the scope of the brief while being fully extensible — proving readiness for production systems, collaboration, and further innovation.
 
